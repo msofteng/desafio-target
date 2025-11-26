@@ -7,6 +7,13 @@ const rl = readline.createInterface({
 	output: process.stdout
 });
 
+const formatarMoeda = (valor) => {
+	return valor.toLocaleString('pt-BR', {
+		style: 'currency',
+		currency: 'BRL'
+	});
+}
+
 const args = process.argv.slice(2).reduce((acc, arg) => {
 	const [key, value] = arg.replace(/^--/, '').split('=');
 	acc[key] = value;
@@ -66,10 +73,7 @@ if (args.app == 'comissionamento') {
 
 	for (const vendedor of comissionamento) {
 		console.log(`Vendedor: ${vendedor.nomeVendedor}`);
-		console.log(`Total de comissão: ${vendedor.totalComissao.toLocaleString('pt-BR', {
-			style: 'currency',
-			currency: 'BRL'
-		})}`);
+		console.log(`Total de comissão: ${formatarMoeda(vendedor.totalComissao)}`);
 		console.log(`Total de vendas: ${vendedor.vendas.length}`);
 		console.log('')
 	}
@@ -192,20 +196,11 @@ else if (args.app == 'calculo-juros') {
 			const valorJuros = ((valorTotal * 0.025) * diasAtraso)
 
 			console.log()
-			console.log(`Valor: ${(valorTotal).toLocaleString('pt-BR', {
-				style: 'currency',
-				currency: 'BRL'
-			})}`);
+			console.log(`Valor: ${formatarMoeda(valorTotal)}`);
 			console.log(`Dias de atraso: ${diasAtraso} dia(s)`)
 			console.log(`Data de vencimento: ${dataVencimento}`);
-			console.log('Total a pagar: ' + (valorTotal + valorJuros).toLocaleString('pt-BR', {
-				style: 'currency',
-				currency: 'BRL'
-			}))
-			console.log(`Juros (2,5% ao dia): ${valorJuros.toLocaleString('pt-BR', {
-				style: 'currency',
-				currency: 'BRL'
-			})}`);
+			console.log('Total a pagar: ' + formatarMoeda(valorTotal + valorJuros))
+			console.log(`Juros (2,5% ao dia): ${formatarMoeda(valorJuros)}`);
 
 			rl.close();
 			return;
