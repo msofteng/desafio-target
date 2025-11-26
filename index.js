@@ -1,5 +1,12 @@
 const fs = require('fs');
 
+const readline = require('readline');
+
+const rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout
+});
+
 const args = process.argv.slice(2).reduce((acc, arg) => {
 	const [key, value] = arg.replace(/^--/, '').split('=');
 	acc[key] = value;
@@ -73,6 +80,90 @@ else if (args.app == 'controle-estoque') {
 		console.log('Indique um arquivo com os dados do estoque para continuar')
 		return
 	}
+
+	const data = fs.readFileSync(args.file, 'utf8');
+	const dados = JSON.parse(data);
+
+	if (!dados.estoque) {
+		console.log('Arquivo inválido');
+		return;
+	}
+
+	var estoque = dados.estoque;
+	const movimentacoes = [];
+
+	const movimentarEstoque = () => {
+		console.log('===================')
+		rl.question(`Itens (Estoque):\n-----------------------------------\ncód.   nome        qtd. \n-----------------------------------\n${estoque.map((produto) => `${produto.codigoProduto} - ${produto.descricaoProduto} (${produto.estoque} disponíveis)`).join('\n')}\nsair - finalizar\nshow - exibir as movimentações\n\ndigite o código do produto:\n`, (codigoProduto) => {
+			if (codigoProduto === 'sair') {
+				console.log('Saindo...');
+				rl.close();
+				return;
+			}
+
+			if (codigoProduto === 'show') {
+				console.log()
+				console.log('Movimentações:');
+				console.log('Quantidade: ' + movimentacoes.length);
+				for (const movimentacao of movimentacoes) {
+					console.log(`[${movimentacao.operacao}] ${movimentacao.descricaoProduto} - ${movimentacao.quantidade} itens ${ movimentacao.operacao === 'Entrada' ? 'adicionados' : 'removidos' }`);
+				}
+				console.log()
+
+				return movimentarEstoque();
+			}
+				
+			const produto = estoque.find(produto => produto.codigoProduto.toString() === codigoProduto);
+
+			if (!produto) {
+				console.log('>>> Produto não encontrado <<<');
+				return movimentarEstoque();
+			}
+
+			rl.question('\nSelecione a operação:\n1 - Entrada\n2 - Saída\n', (operacao) => {
+				if (!['1', '2'].includes(operacao)) {
+					console.log('>>> Operação inválida <<<');
+					return movimentarEstoque();
+				}
+
+				rl.question('\nQuantidade: \n', (quantidade) => {
+					if (isNaN(parseInt(quantidade))) {
+						console.log('>>> Quantidade inválida <<<');
+						return movimentarEstoque();
+					}
+
+					if (operacao === '2' && parseInt(quantidade) > produto.estoque) {
+						console.log('>>> Quantidade insuficiente em estoque <<<');
+						return movimentarEstoque();
+					}
+
+					movimentacoes.push({
+						id: movimentacoes.length + 1,
+						codigoProduto: produto.codigoProduto,
+						descricaoProduto: produto.descricaoProduto,
+						operacao: operacao === '1' ? 'Entrada' : 'Saída',
+						quantidade: parseInt(quantidade)
+					});
+
+					estoque = estoque.map(produto => {
+						if (produto.codigoProduto === parseInt(codigoProduto)) {
+							return {
+								...produto,
+								estoque: operacao === '1' ? produto.estoque + parseInt(quantidade) : produto.estoque - parseInt(quantidade)
+							};
+						}
+
+						return produto;
+					});
+
+					console.log('Movimentação registrada com sucesso!');
+					return movimentarEstoque();
+				});
+			});
+		})
+	}
+
+	movimentarEstoque();
 }
 
 else if (args.app == 'calculo-juros') {
