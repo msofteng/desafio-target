@@ -29,7 +29,7 @@ Veja na tabela a seguir quais os parâmetros necessários para rodar cada aplica
 
 nome | descrição | exemplo (uso)
 ---- | --------- | -------------
-`--file` | localização do arquivo JSON onde estão os registros de vendas do time comercial | `--file=./vendas.json`
+`--file` | localização do arquivo JSON onde estão os<br> registros de vendas do time comercial | `--file=./vendas.json`
 
 #### controle-estoque (ex.: `--app=controle-estoque`)
 
