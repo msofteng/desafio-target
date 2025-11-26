@@ -167,10 +167,51 @@ else if (args.app == 'controle-estoque') {
 }
 
 else if (args.app == 'calculo-juros') {
-	if (!args.valor) {
-		console.log('Indique um valor para continuar')
-		return
-	}
+	rl.question('\nInsira o valor (formato 000.000.000,00):\n', (valor) => {
+		if (isNaN(parseFloat(valor))) {
+			console.log('>>> Valor inválido <<<');
+			rl.close();
+			return;
+		}
+
+		rl.question('\nInsira a data de vencimento (formato DD/MM/AAAA):\n', (dataVencimento) => {
+			const dataAtual = new Date();
+			const dataVencimentoDate = new Date(dataVencimento.split('/').reverse().join('-'));
+
+			if (dataVencimentoDate.toString() === 'Invalid Date') {
+				console.log('>>> Data de vencimento inválida <<<');
+				rl.close();
+				return;
+			}
+
+			const valorTotal = parseFloat(valor.replaceAll('.', '').replaceAll(',', '.'));
+
+			const diasAtraso = Math.ceil((dataAtual - dataVencimentoDate) / (1000 * 60 * 60 * 24)) - 1;
+
+			// multa de 2,5% por dia de atraso
+			const valorJuros = ((valorTotal * 0.025) * diasAtraso)
+
+			console.log()
+			console.log(`Valor: ${(valorTotal).toLocaleString('pt-BR', {
+				style: 'currency',
+				currency: 'BRL'
+			})}`);
+			console.log(`Dias de atraso: ${diasAtraso} dia(s)`)
+			console.log(`Data de vencimento: ${dataVencimento}`);
+			console.log('Total a pagar: ' + (valorTotal + valorJuros).toLocaleString('pt-BR', {
+				style: 'currency',
+				currency: 'BRL'
+			}))
+			console.log(`Juros (2,5% ao dia): ${valorJuros.toLocaleString('pt-BR', {
+				style: 'currency',
+				currency: 'BRL'
+			})}`);
+
+			rl.close();
+			return;
+		});
+
+	})
 }
 
 else {
